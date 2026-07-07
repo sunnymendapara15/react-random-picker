@@ -1,0 +1,65 @@
+.wheel-viewport {
+  position: relative;
+  width: 100%;
+  max-width: 320px;
+  height: 320px;
+  margin: 0 auto;
+}
+
+.wheel {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  transition: transform 2.5s cubic-bezier(0.25, 0.1, 0.25, 1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.wheel-placeholder {
+  color: rgba(255, 255, 255, 0.65);
+  font-size: 0.9rem;
+  text-align: center;
+  width: 80%;
+}
+
+.segment-label {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform-origin: center;
+  width: 120px;
+  text-align: left;
+  font-size: 0.85rem;
+  color: #111;
+  font-weight: 600;
+  text-shadow: 1px 1px 2px rgba(255, 255, 255, 0.6);
+}
+
+.wheel-pointer {
+  position: absolute;
+  top: -12px;
+  left: 50%;
+  transform: translateX(-50%);
+  color: #ff8a00;
+  font-size: 2rem;
+  text-shadow: 0 3px 12px rgba(0, 0, 0, 0.4);
+}
+
+.wheel-pointer.spinning {
+  animation: pointer-bounce 0.3s infinite;
+}
+
+@keyframes pointer-bounce {
+  0% {
+    transform: translate(-50%, 0);
+  }
+  50% {
+    transform: translate(-50%, 4px);
+  }
+  100% {
+    transform: translate(-50%, 0);
+  }
+}
