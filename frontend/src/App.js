@@ -1,8 +1,13 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import NameListManager from './components/NameListManager';
 import SpinWheel from './components/SpinWheel';
+import AuthPanel from './components/AuthPanel';
+import UserCrudManager from './components/UserCrudManager';
 import { pickRandomEntry } from './utils/randomPicker';
+import { deleteUser, fetchUsers, loginUser, signupUser, updateUser } from './utils/api';
 import './styles/App.css';
+import './styles/AuthPanel.css';
+import './styles/UserCrudManager.css';
 
 function App() {
   const [entries, setEntries] = useState(['Avery', 'Jordan', 'Riley', 'Kai', 'Morgan']);
@@ -11,6 +16,79 @@ function App() {
   const [isSpinning, setIsSpinning] = useState(false);
   const [spinTrigger, setSpinTrigger] = useState(0);
   const [statusMessage, setStatusMessage] = useState('Add entries to build your list.');
+  const [users, setUsers] = useState([]);
+  const [usersLoading, setUsersLoading] = useState(false);
+  const [currentUser, setCurrentUser] = useState(null);
+  const [authMessage, setAuthMessage] = useState('');
+
+  useEffect(() => {
+    refreshUsers();
+  }, []);
+
+  const refreshUsers = async () => {
+    setUsersLoading(true);
+    try {
+      const list = await fetchUsers();
+      setUsers(list || []);
+    } catch (error) {
+      setAuthMessage(error.message);
+    } finally {
+      setUsersLoading(false);
+    }
+  };
+
+  const handleLogin = async (payload) => {
+    try {
+      const result = await loginUser(payload);
+      setCurrentUser(result.user);
+      setAuthMessage(result.message);
+      return { success: true, message: result.message };
+    } catch (error) {
+      setAuthMessage(error.message);
+      return { success: false, message: error.message };
+    }
+  };
+
+  const handleSignup = async (payload) => {
+    try {
+      const newUser = await signupUser(payload);
+      setCurrentUser(newUser);
+      setAuthMessage(`Signed up as ${newUser.name}`);
+      await refreshUsers();
+      return { success: true, message: `Signed up as ${newUser.name}` };
+    } catch (error) {
+      setAuthMessage(error.message);
+      return { success: false, message: error.message };
+    }
+  };
+
+  const handleUpdateUser = async (userId, updates) => {
+    try {
+      const updated = await updateUser(userId, updates);
+      setAuthMessage(`Updated ${updated.name}`);
+      if (currentUser?.id === updated.id) {
+        setCurrentUser(updated);
+      }
+      await refreshUsers();
+      return { success: true };
+    } catch (error) {
+      return { success: false, message: error.message };
+    }
+  };
+
+  const handleDeleteUser = async (userId) => {
+    try {
+      await deleteUser(userId);
+      setAuthMessage('User removed.');
+      if (currentUser?.id === userId) {
+        setCurrentUser(null);
+      }
+      await refreshUsers();
+      return { success: true };
+    } catch (error) {
+      return { success: false, message: error.message };
+    }
+  };
 
   const handleAddEntry = (entry) => {
     setEntries((prev) => [...prev, entry]);
@@ -83,9 +161,7 @@ function App() {
               {isSpinning ? 'Spinning…' : 'Spin now'}
             </button>
             <p className="status-text">{statusMessage}</p>
-            {selectedEntry && !isSpinning && (
-              <div className="result-badge">{selectedEntry}</div>
-            )}
+            {selectedEntry && !isSpinning && <div className="result-badge">{selectedEntry}</div>}
           </div>
         </section>
         <section className="list-card card">
@@ -95,6 +171,18 @@ function App() {
             onAddEntry={handleAddEntry}
             onRemoveEntry={handleRemoveEntry}
             onClear={handleClearList}
+          />
+        </section>
+        <section className="auth-card card">
+          <AuthPanel currentUser={currentUser} onLogin={handleLogin} onSignup={handleSignup} message={authMessage} />
+        </section>
+        <section className="users-card card">
+          <UserCrudManager
+            users={users}
+            loading={usersLoading}
+            onDeleteUser={handleDeleteUser}
+            onUpdateUser={handleUpdateUser}
+            currentUser={currentUser}
           />
         </section>
       </main>

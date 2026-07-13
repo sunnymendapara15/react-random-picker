@@ -47,10 +47,10 @@ body {
 
 .app-grid {
   width: 100%;
-  max-width: 1100px;
+  max-width: 1200px;
   display: grid;
   gap: 1.5rem;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
 }
 
 .card {
@@ -152,6 +152,11 @@ body {
 .list-card {
   display: flex;
   flex-direction: column;
+}
+
+.auth-card,
+.users-card {
+  min-height: 320px;
 }
 
 @media (max-width: 600px) {
